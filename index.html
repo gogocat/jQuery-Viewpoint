@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
+<meta http-equiv="cleartype" content="on">
+
+<title>Untitled Document</title>
+<style type="text/css">
+body {
+	background-color:#fff;
+	padding::0; margin:0;
+	font-size:80%;
+	font-family:Georgia, "Times New Roman", Times, serif;
+}
+.box {
+	width:50px;
+	height:50px;
+	background-color:#CCC;
+	position:absolute;
+	padding:0px 10px;
+	text-align:center;
+	font-size:4em;
+	font-weight:bold;
+	line-height:30px;
+}
+.item1 {
+	left:0px;
+	top:200px;
+	background-color:#F00;
+}
+.item2 {
+	left:0px;
+	top:800px;
+}
+.item3 {
+	left:800px;
+	top:500px;
+}
+.item4 {
+	left:1000px;
+	top:2000px;
+}
+</style>
+
+<script src="jquery-1.11.3.min.js"></script>
+<script src="viewpoint.js"></script>
+</head>
+
+<body>
+<div class="box item1">1</div>
+<div class="box item2">2</div>
+<div class="box item3">3</div>
+<div class="box item4">4</div>
+<p>test</p>
+<script>
+$(document).ready(function(){
+	$(".item3").viewpoint({
+		inView: function(e){
+			console.log("inView ", $(e.target).text());
+			$(e.target).delay(500).animate({
+				left: '-=100',
+				height: '+=100',
+				width: '+=100'
+			  }, 5000, function() {
+				// Animation complete.
+			});
+		},
+		offView:function(e){
+			console.log("outView ", $(e.target).text());
+			$(e.target).stop().width(50).height(50);
+		},
+		offTop:function(e){
+			console.log("offTop");
+		},
+		offRight:function(e){
+			console.log("offRight");
+		},
+		offBottom:function(e){
+			console.log("offBottom");
+		},
+		offLeft:function(e){
+			console.log("offLeft");
+		}
+	});
+	
+});
+</script>
+</body>
+</html>
