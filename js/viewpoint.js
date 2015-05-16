@@ -14,6 +14,7 @@
 		verion = "1.0.0",
 		defaultOptions = {
 			scrollElement: window,
+			//contentPane: null,
 			eventCheckViewPoint: "checkViewPoint",
 			eventNamespace: ".viewpoint",
 			inView: null,
@@ -27,24 +28,26 @@
 			bottomOffset: 0,
 			leftOffset: 0,
 			delay: 50
-		},
-		Viewpoint = function (element, pluginSelector, opt) {
-			// check if opt define any function
-			if (element && $.isPlainObject(opt)) {
-				if ($.isFunction(opt.inView) || 
-					$.isFunction(opt.offView) || 
-					$.isFunction(opt.offTop) || 
-					$.isFunction(opt.offRight) || 
-					$.isFunction(opt.offBottom) ||
-					$.isFunction(opt.offLeft)) {
-					this.pluginSelector = pluginSelector;
-					this.options = $.extend(defaultOptions, opt);
-				} else {
-					return;
-				}
-				return this.init(element);
-			}
 		};
+		
+	function Viewpoint(element, pluginSelector, opt) {
+		// check if opt define any function
+		this.constructor = Viewpoint;
+		if (element && $.isPlainObject(opt)) {
+			if ($.isFunction(opt.inView) || 
+				$.isFunction(opt.offView) || 
+				$.isFunction(opt.offTop) || 
+				$.isFunction(opt.offRight) || 
+				$.isFunction(opt.offBottom) ||
+				$.isFunction(opt.offLeft)) {
+				this.pluginSelector = pluginSelector;
+				this.options = $.extend(defaultOptions, opt);
+			} else {
+				return;
+			}
+			return this.init(element);
+		}
+	}
     
     Viewpoint.prototype = {
 		sWindow: null,
@@ -54,11 +57,12 @@
 			var self = this;
 			self.sWindow = $(self.options.scrollElement);	
 			// check if window or detect scroll element exits and is scrollable
-			if (self.sWindow.length) {
-				self.element = element;
-				self.$element = $(element);
-				self.setupEvents();
+			if (!self.sWindow.length) {
+				throw "scrollElement not found";
 			}
+			self.element = element;
+			self.$element = $(element);
+			self.setupEvents();
         },
 		setupEvents: function() {
 			var self = this,
@@ -73,37 +77,37 @@
 				self.updateCurrentState();
 				if (self.isInViewPoint()) {
 					if (self.options.inView && self.isCalled !== "inView") {
-						self.options.inView(eData);
+						self.options.inView(eData, self.currentState);
 						self.isCalled = "inView";
 					}
 				} else {
 					if (self.options.offView) {
 						if (self.isCalled !== "offView"){
-							self.options.offView(eData);
+							self.options.offView(eData, self.currentState);
 							self.isCalled = "offView";
 						}
 					}
 					if (self.options.offTop) {
 						if (self.isCalled !== "offTop"){
-							self.options.offTop(eData);
+							self.options.offTop(eData, self.currentState);
 							self.isCalled = "offTop";
 						}
 					}
 					if (self.options.offRight) {
 						if (self.isCalled !== "offRight"){
-							self.options.offRight(eData);
+							self.options.offRight(eData, self.currentState);
 							self.isCalled = "offRight";
 						}
 					}
 					if (self.options.offBottom) {
 						if (self.isCalled !== "offBottom"){
-							self.options.offBottom(eData);
+							self.options.offBottom(eData, self.currentState);
 							self.isCalled = "offBottom";
 						}
 					}
 					if (self.options.offLeft) {
 						if (self.isCalled !== "offLeft"){
-							self.options.offLeft(eData);
+							self.options.offLeft(eData, self.currentState);
 							self.isCalled = "offLeft";
 						}
 					}
@@ -140,7 +144,7 @@
 			return this;
 		},	
 		updateCurrentState: function() {
-			var self = this;
+			var self = this;	
 			self.currentState.winWidth = self.sWindow.width();
 			self.currentState.winHeight = self.sWindow.height();
 			self.currentState.winScrollTop = self.sWindow.scrollTop();
@@ -211,6 +215,7 @@
 			}
 		}
     };
+	
 	$.fn.viewpoint.version = verion;
 
 }(jQuery, document, window));
