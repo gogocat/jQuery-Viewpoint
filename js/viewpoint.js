@@ -14,7 +14,7 @@
 		verion = "1.0.0",
 		defaultOptions = {
 			scrollElement: window,
-			//contentPane: null,
+			contentPane: null,
 			eventCheckViewPoint: "checkViewPoint",
 			eventNamespace: ".viewpoint",
 			inView: null,
@@ -41,7 +41,7 @@
 				$.isFunction(opt.offBottom) ||
 				$.isFunction(opt.offLeft)) {
 				this.pluginSelector = pluginSelector;
-				this.options = $.extend(defaultOptions, opt);
+				this.options = $.extend({}, defaultOptions, opt);
 			} else {
 				return;
 			}
@@ -52,6 +52,7 @@
     Viewpoint.prototype = {
 		sWindow: null,
 		isCalled: "",
+		isDisable: false,
 		currentState: {},
         init: function (element) {
 			var self = this;
@@ -59,6 +60,12 @@
 			// check if window or detect scroll element exits and is scrollable
 			if (!self.sWindow.length) {
 				throw "scrollElement not found";
+			}
+			if (typeof self.options.contentPane === "string") {
+				self.$contentPane = $(self.options.contentPane);
+				if (!self.$contentPane.length) {
+					throw "contentPane not found";
+				}
 			}
 			self.element = element;
 			self.$element = $(element);
@@ -77,37 +84,37 @@
 				self.updateCurrentState();
 				if (self.isInViewPoint()) {
 					if (self.options.inView && self.isCalled !== "inView") {
-						self.options.inView(eData, self.currentState);
+						self.options.inView(self.$element, self.currentState);
 						self.isCalled = "inView";
 					}
 				} else {
 					if (self.options.offView) {
 						if (self.isCalled !== "offView"){
-							self.options.offView(eData, self.currentState);
+							self.options.offView(self.$element, self.currentState);
 							self.isCalled = "offView";
 						}
 					}
 					if (self.options.offTop) {
 						if (self.isCalled !== "offTop"){
-							self.options.offTop(eData, self.currentState);
+							self.options.offTop(self.$element, self.currentState);
 							self.isCalled = "offTop";
 						}
 					}
 					if (self.options.offRight) {
 						if (self.isCalled !== "offRight"){
-							self.options.offRight(eData, self.currentState);
+							self.options.offRight(self.$element, self.currentState);
 							self.isCalled = "offRight";
 						}
 					}
 					if (self.options.offBottom) {
 						if (self.isCalled !== "offBottom"){
-							self.options.offBottom(eData, self.currentState);
+							self.options.offBottom(self.$element, self.currentState);
 							self.isCalled = "offBottom";
 						}
 					}
 					if (self.options.offLeft) {
 						if (self.isCalled !== "offLeft"){
-							self.options.offLeft(eData, self.currentState);
+							self.options.offLeft(self.$element, self.currentState);
 							self.isCalled = "offLeft";
 						}
 					}
@@ -123,11 +130,17 @@
 			
 			// bind document ready to check on first load
 			$(document).ready(function(event){
+				if (self.isDisable) {
+					return;
+				}
 				triggerCheckViewpoint(event);
 			});
 			
 			// bind window scroll event and trigger "sWindowscroll" event
 			self.sWindow.on(("scroll" + self.options.eventNamespace), function(event){
+				if (self.isDisable) {
+					return;
+				}
 				clearTimeout(debounceScrollTimer);
 				debounceScrollTimer = setTimeout(function(event) {
 					triggerCheckViewpoint(event);
@@ -136,6 +149,9 @@
 			
 			// update sWindow size variable on window resize
 			self.sWindow.on(("resize" + self.options.eventNamespace), function(event){
+				if (self.isDisable) {
+					return;
+				}
 				clearTimeout(debounceScrollTimer);
 				debounceResizeTimer = setTimeout(function(event) {
 					triggerCheckViewpoint(event);
@@ -144,15 +160,17 @@
 			return this;
 		},	
 		updateCurrentState: function() {
-			var self = this;	
+			var self = this,
+				$elementPos = (self.$contentPane) ? self.$element.position() : self.$element.offset();
+				
 			self.currentState.winWidth = self.sWindow.width();
 			self.currentState.winHeight = self.sWindow.height();
 			self.currentState.winScrollTop = self.sWindow.scrollTop();
 			self.currentState.winScrollLeft = self.sWindow.scrollLeft();
 			self.currentState.elementWidth = self.$element.width();
 			self.currentState.elementHeight = self.$element.height();
-			self.currentState.elementOffsetTop = self.$element.offset().top;
-			self.currentState.elementOffsetLeft = self.$element.offset().left;
+			self.currentState.elementOffsetTop = $elementPos.top;
+			self.currentState.elementOffsetLeft = $elementPos.left;
 			self.currentState.foldWidth = self.currentState.winWidth + self.currentState.winScrollLeft;
 			self.currentState.foldHeight = self.currentState.winHeight + self.currentState.winScrollTop;
 		},		
@@ -180,13 +198,22 @@
 		checkLeft: function() {
 			var self = this;
 			return self.currentState.winScrollLeft >= ((self.currentState.elementOffsetLeft + self.currentState.elementWidth) - self.options.leftOffset);
+		},
+		disable: function() {
+			var self = this;
+			self.isDisable = true;
+		},
+		enable: function() {
+			var self = this;
+			self.isDisable = false;
 		}
     };
  
 	// jQuery bridge 
     $.fn.viewpoint = function (options) {
-		var currentPlugin, methodName, pluginInstance, 
-			pluginSelector = this.selector,
+		var pluginSelector = this.selector,
+			methodName, 
+			pluginInstance, 
 			obj = {};
 		// if options is a config object, return new instance of the plugin
 		if ($.isPlainObject(options) || !options) {
@@ -206,11 +233,11 @@
 		}
 		// if call method after plugin init. return methid call
 		else if (typeof arguments[0] === "string") {
-			if ($.data(this[0], pluginName)) {
+			pluginInstance = $.data(this[0], pluginName);
+			if (pluginInstance) {
 				methodName = arguments[0];
-				currentPlugin = $.data(this[0], pluginName);
-				if (currentPlugin[methodName]) {
-				  return (currentPlugin[methodName].apply(pluginInstance, Array.prototype.slice.call(arguments, 1)));
+				if (pluginInstance[methodName]) {
+				  return pluginInstance[methodName].apply(pluginInstance, Array.prototype.slice.call(arguments, 1));
 				}
 			}
 		}
