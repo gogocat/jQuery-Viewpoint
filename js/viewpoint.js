@@ -23,11 +23,11 @@
 			offRight: null,
 			offBottom: null,
 			offLeft: null,
-			topOffset: 0, // threshold for detection 
-			rightOffset: 0,
-			bottomOffset: 0,
-			leftOffset: 0,
-			delay: 50
+			//topOffset: 0, // threshold for detection 
+			//rightOffset: 0,
+			//bottomOffset: 0,
+			//leftOffset: 0,
+			delay: 70
 		};
 		
 	function Viewpoint(element, pluginSelector, opt) {
@@ -184,20 +184,24 @@
 			return self.currentState.isInViewPoint;
 		},
 		checkTop: function() {
-			var self = this;		
-			return self.currentState.winScrollTop >= ((self.currentState.elementOffsetTop + self.currentState.elementHeight) - self.options.topOffset);
+			var self = this,
+				offset = (typeof self.options.topOffset === "number" ) ? self.options.topOffset : self.currentState.elementHeight;
+			return self.currentState.winScrollTop >= ((self.currentState.elementOffsetTop + self.currentState.elementHeight) - offset);
 		},
 		checkRight: function() { 
-			var self = this;	
-			return self.currentState.foldWidth <= (self.currentState.elementOffsetLeft - self.options.rightOffset);
+			var self = this,
+				offset = (typeof self.options.rightOffset === "number" ) ? self.options.rightOffset : 0 - self.currentState.elementWidth;
+			return self.currentState.foldWidth <= (self.currentState.elementOffsetLeft - offset);
 		},
 		checkBottom: function() {
-			var self = this;
-			return self.currentState.foldHeight <= (self.currentState.elementOffsetTop - self.options.bottomOffset);
+			var self = this,
+				offset = (typeof self.options.bottomOffset === "number" ) ? self.options.bottomOffset : 0 - self.currentState.elementHeight;
+			return self.currentState.foldHeight <= (self.currentState.elementOffsetTop - offset);
 		},
 		checkLeft: function() {
-			var self = this;
-			return self.currentState.winScrollLeft >= ((self.currentState.elementOffsetLeft + self.currentState.elementWidth) - self.options.leftOffset);
+			var self = this,
+				offset = (typeof self.options.leftOffset === "number" ) ? self.options.leftOffset : self.currentState.elementWidth;
+			return self.currentState.winScrollLeft >= ((self.currentState.elementOffsetLeft + self.currentState.elementWidth) - offset);
 		},
 		disable: function() {
 			var self = this;
