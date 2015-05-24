@@ -23,10 +23,10 @@
 			offRight: null,
 			offBottom: null,
 			offLeft: null,
-			//topOffset: 0, // threshold for detection 
-			//rightOffset: 0,
-			//bottomOffset: 0,
-			//leftOffset: 0,
+			topOffset: null, // threshold for detection 
+			rightOffset: null,
+			bottomOffset: null,
+			leftOffset: null,
 			delay: 70
 		};
 		
@@ -94,25 +94,25 @@
 							self.isCalled = "offView";
 						}
 					}
-					if (self.options.offTop) {
+					if (self.options.offTop && self.currentState.isOffTop) {
 						if (self.isCalled !== "offTop"){
 							self.options.offTop(self.$element, self.currentState);
 							self.isCalled = "offTop";
 						}
 					}
-					if (self.options.offRight) {
+					if (self.options.offRight && self.currentState.isOffRight) {
 						if (self.isCalled !== "offRight"){
 							self.options.offRight(self.$element, self.currentState);
 							self.isCalled = "offRight";
 						}
 					}
-					if (self.options.offBottom) {
+					if (self.options.offBottom && self.currentState.isOffBottom) {
 						if (self.isCalled !== "offBottom"){
 							self.options.offBottom(self.$element, self.currentState);
 							self.isCalled = "offBottom";
 						}
 					}
-					if (self.options.offLeft) {
+					if (self.options.offLeft && self.currentState.isOffLeft) {
 						if (self.isCalled !== "offLeft"){
 							self.options.offLeft(self.$element, self.currentState);
 							self.isCalled = "offLeft";
@@ -176,11 +176,11 @@
 		},		
 		isInViewPoint: function() {
 			var self = this;
-			self.currentState.isoffTop = self.checkTop();
+			self.currentState.isOffTop = self.checkTop();
 			self.currentState.isOffRight = self.checkRight();
 			self.currentState.isOffBottom = self.checkBottom();
 			self.currentState.isOffLeft = self.checkLeft();
-			self.currentState.isInViewPoint = (!self.currentState.isoffTop && !self.currentState.isOffRight && !self.currentState.isOffBottom && !self.currentState.isOffLeft);
+			self.currentState.isInViewPoint = (!self.currentState.isOffTop && !self.currentState.isOffRight && !self.currentState.isOffBottom && !self.currentState.isOffLeft);
 			return self.currentState.isInViewPoint;
 		},
 		checkTop: function() {

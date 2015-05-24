@@ -1,4 +1,5 @@
 $(document).ready(function(){
+	/*
 	$(".item3").viewpoint({
 		inView: function(element, currentState){
 			console.log("inView ", element.text(), element, currentState);
@@ -21,10 +22,13 @@ $(document).ready(function(){
 			console.log("offLeft item3");
 		}
 	});
+	*/
 	
 	$(".item4").viewpoint({
 		scrollElement: ".scroller",
 		contentPane: ".dummy-container",
+		topOffset: 50,
+		
 		inView: function(element, currentState){
 			console.log("inView item", element.text(), element, currentState);
 			element.addClass("tada");
@@ -33,17 +37,18 @@ $(document).ready(function(){
 			console.log("outView ", element.text(), currentState);
 			element.removeClass("tada");
 		},
+		
 		offTop:function(element, currentState){
-			console.log("offTop item4");
+			console.log("offTop item4 ", currentState);
 		},
 		offRight:function(element, currentState){
-			console.log("offRight item4");
+			console.log("offRight item4 ", currentState);
 		},
 		offBottom:function(element, currentState){
-			console.log("offBottom item4");
+			console.log("offBottom item4 ", currentState);
 		},
 		offLeft:function(element, currentState){
-			console.log("offLeft item4");
+			console.log("offLeft item4 ", currentState);
 		}
 	});
 });
