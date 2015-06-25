@@ -35,8 +35,25 @@
 		rightOffset: undefined,
 		bottomOffset: undefined,
 		leftOffset: undefined,
+        affixTop: undefined,
+        offAffixTop: undefined,
 		delay: 70
 	};
+
+    function isNumeric(obj) {
+        return obj - parseFloat(obj) >= 0;
+    }
+    function isPercent(str) {
+        var ret = false,
+        percentChar = "%";
+        if(typeof str === "string") {
+            if (str.charAt(str.length - 1) === percentChar) {;
+                ret = str.substring(0, str.length - 1);
+                return isNumeric(ret) ? ret : false;
+            }
+        }
+        return ret;
+    }
 	
 	function Viewpoint(element, pluginSelector, opt) {
 		// check if opt define any function
@@ -198,7 +215,8 @@
 			self.currentState.foldWidth = self.currentState.winWidth + self.currentState.winScrollLeft;
 			self.currentState.foldHeight = self.currentState.winHeight + self.currentState.winScrollTop;
 			self.currentState.isAffixTop = self.affixTop();
-		},		
+		},
+        
 		isInViewPoint: function() {
 			var self = this;
 			self.currentState.isOffTop = self.checkOffTop();
@@ -210,29 +228,54 @@
 		},
 		checkOffTop: function() {
 			var self = this,
-			offset = (typeof self.options.topOffset === "number" ) ? self.options.topOffset : self.currentState.elementHeight;
+                offsetPercentNum = isPercent(self.options.topOffset),
+                offset = 0;
+            if (typeof self.options.topOffset === "number") {
+                offset = self.options.topOffset;
+            } else if (offsetPercentNum !== false) {
+                offset = self.currentState.elementHeight * (Number(offsetPercentNum) / 100);
+            }
 			return self.currentState.winScrollTop >= ((self.currentState.elementOffsetTop + self.currentState.elementHeight) - offset);
 		},
 		checkOffRight: function() { 
 			var self = this,
-			offset = (typeof self.options.rightOffset === "number" ) ? self.options.rightOffset : 0 - self.currentState.elementWidth;
+                offsetPercentNum = isPercent(self.options.rightOffset),
+                offset = 0;
+            if (typeof self.options.rightOffset === "number") {
+                offset = self.options.rightOffset;
+            } else if (offsetPercentNum !== false) {
+                offset = 0 - (self.currentState.elementWidth * (Number(offsetPercentNum) / 100));
+            }
 			return self.currentState.foldWidth <= (self.currentState.elementOffsetLeft - offset);
 		},
 		checkOffBottom: function() {
 			var self = this,
-			offset = (typeof self.options.bottomOffset === "number" ) ? self.options.bottomOffset : 0 - self.currentState.elementHeight;
+                offsetPercentNum = isPercent(self.options.bottomOffset),
+                offset = 0;
+            if (typeof self.options.bottomOffset === "number") {
+                offset = self.options.bottomOffset;
+            } else if (offsetPercentNum !== false) {
+                offset = 0 - (self.currentState.elementHeight * (Number(offsetPercentNum) / 100));
+            }
 			return self.currentState.foldHeight <= (self.currentState.elementOffsetTop - offset);
 		},
 		checkOffLeft: function() {
 			var self = this,
-			offset = (typeof self.options.leftOffset === "number" ) ? self.options.leftOffset : self.currentState.elementWidth;
+                offsetPercentNum = isPercent(self.options.leftOffset),
+                offset = 0;
+            if (typeof self.options.leftOffset === "number") {
+                offset = self.options.leftOffset;
+            } else if (offsetPercentNum !== false) {
+                offset = self.currentState.elementWidth * (Number(offsetPercentNum) / 100);
+            }
 			return self.currentState.winScrollLeft >= ((self.currentState.elementOffsetLeft + self.currentState.elementWidth) - offset);
 		},
 		affixTop: function() {
 			var self = this,
-			offset = (typeof self.options.topOffset === "number" ) ? self.options.topOffset : 0;
+                offset = (typeof self.options.topOffset === "number" ) ? self.options.topOffset : 0;
 			return self.currentState.winScrollTop >= (self.currentState.elementOffsetTop - offset);
 		},
+        
 		disable: function() {
 			var self = this;
 			self.isDisable = true;

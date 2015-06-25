@@ -27,7 +27,10 @@ $(document).ready(function(){
 	$(".item4").viewpoint({
 		scrollElement: ".scroller",
 		contentPane: ".dummy-container",
-		topOffset: 50,
+		topOffset: "50%",
+        bottomOffset: "50%",
+        leftOffset: "50%",
+        rightOffset: "50%",
 		
 		inView: function(element, currentState){
 			console.log("inView item", element.text(), element, currentState);
