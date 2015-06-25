@@ -7,16 +7,9 @@
 //	'inView', 'offView', 'offTop', 'offRight', 'offBottom', 'offLeft', 'affixTop', 'offAffixTop'
 */
 
-(function(document, window, factory) {
+(function($, document, window) {
 	"use strict";
-	if (typeof jQuery === "undefined" && NIMBUS_READY) {
-		NIMBUS_READY.callbacks.push(factory);
-	} else {
-		factory();
-	}
-}(document, window, function(){
-	"use strict";
-	
+    
 	var viewpoint,
 	pluginName = "viewpoint",
 	verion = "1.0.0",
@@ -322,4 +315,4 @@
 	
 	$.fn.viewpoint.version = verion;	
 	
-}));
+}(jQuery, document, window));
