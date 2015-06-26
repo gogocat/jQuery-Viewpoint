@@ -11,31 +11,33 @@
 	"use strict";
     
 	var viewpoint,
-	pluginName = "viewpoint",
-	verion = "1.0.0",
-	defaultOptions = {
-		scrollElement: window,
-		contentPane: null,
-		eventCheckViewPoint: "checkViewPoint",
-		eventNamespace: ".viewpoint",
-		inView: undefined,
-		offView: undefined,
-		offTop: undefined,
-		offRight: undefined,
-		offBottom: undefined,
-		offLeft: undefined,
-		topOffset: undefined, // threshold for detection 
-		rightOffset: undefined,
-		bottomOffset: undefined,
-		leftOffset: undefined,
-        affixTop: undefined,
-        offAffixTop: undefined,
-		delay: 70
-	};
+        pluginName = "viewpoint",
+        version = "1.0.1",
+        defaultOptions = {
+            scrollElement: window,
+            contentPane: null,
+            eventCheckViewPoint: "checkViewPoint",
+            eventNamespace: ".viewpoint",
+            inView: undefined,
+            offView: undefined,
+            offTop: undefined,
+            offRight: undefined,
+            offBottom: undefined,
+            offLeft: undefined,
+            topOffset: undefined, // threshold for detection 
+            rightOffset: undefined,
+            bottomOffset: undefined,
+            leftOffset: undefined,
+            affixOffset: undefined,
+            affixTop: undefined,
+            offAffixTop: undefined,
+            delay: 70
+        };
 
     function isNumeric(obj) {
         return obj - parseFloat(obj) >= 0;
     }
+    
     function isPercent(str) {
         var ret = false,
         percentChar = "%";
@@ -207,7 +209,7 @@
 			self.currentState.elementOffsetLeft = $elementPos.left;
 			self.currentState.foldWidth = self.currentState.winWidth + self.currentState.winScrollLeft;
 			self.currentState.foldHeight = self.currentState.winHeight + self.currentState.winScrollTop;
-			self.currentState.isAffixTop = self.affixTop();
+			self.currentState.isAffixTop = self.checkAffixTop();
 		},
         
 		isInViewPoint: function() {
@@ -263,12 +265,16 @@
             }
 			return self.currentState.winScrollLeft >= ((self.currentState.elementOffsetLeft + self.currentState.elementWidth) - offset);
 		},
-		affixTop: function() {
+		checkAffixTop: function() {
 			var self = this,
-                offset = (typeof self.options.topOffset === "number" ) ? self.options.topOffset : 0;
+                offset = (typeof self.options.affixOffset === "number" ) ? self.options.affixOffset : 0;
 			return self.currentState.winScrollTop >= (self.currentState.elementOffsetTop - offset);
 		},
-        
+        reset: function(opt) {
+            var self = this;
+            self.isCalled = (opt && opt.isCalled === false) ? "" : self.isCalled;
+            self.isAffixTopCalled = (opt && opt.isAffixTopCalled === false) ? "" : self.isAffixTopCalled;
+        },
 		disable: function() {
 			var self = this;
 			self.isDisable = true;
@@ -282,9 +288,9 @@
 	// jQuery bridge 
     $.fn.viewpoint = function (options) {
 		var pluginSelector = this.selector,
-		methodName, 
-		pluginInstance, 
-		obj = {};
+            methodName, 
+            pluginInstance, 
+            obj = {};
 		// if options is a config object, return new instance of the plugin
 		if ($.isPlainObject(options) || !options) {
 			return this.each(function() {
@@ -301,7 +307,7 @@
 				}
 			});
 		}
-		// if call method after plugin init. return methid call
+		// if call method after plugin init. return method
 		else if (typeof arguments[0] === "string") {
 			pluginInstance = $.data(this[0], pluginName);
 			if (pluginInstance) {
@@ -313,6 +319,6 @@
 		}
     };
 	
-	$.fn.viewpoint.version = verion;	
+	$.fn.viewpoint.version = version;	
 	
 }(jQuery, document, window));
