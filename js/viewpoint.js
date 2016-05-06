@@ -12,7 +12,7 @@
     
 	var viewpoint,
         pluginName = "viewpoint",
-        version = "1.0.1",
+        version = "1.1.0",
         defaultOptions = {
             scrollElement: window,
             contentPane: null,
@@ -31,13 +31,15 @@
             affixOffset: undefined,
             affixTop: undefined,
             offAffixTop: undefined,
+			//autoTriggerInView: true, // flag if trigger in view event even element is not fully in view
+			//autoTriggerThreshold: 10, // minimum threshold autoTriggerInView detection
             delay: 70
         };
 
     function isNumeric(obj) {
         return obj - parseFloat(obj) >= 0;
     }
-    
+    // check str is '[number]%' otherwiser return false
     function isPercent(str) {
         var ret = false,
         percentChar = "%";
@@ -50,7 +52,7 @@
         return ret;
     }
 	
-	function Viewpoint(element, pluginSelector, opt) {
+	function Viewpoint(element, opt) {
 		// check if opt define any function
 		this.constructor = Viewpoint;
 		if (element && $.isPlainObject(opt)) {
@@ -62,7 +64,6 @@
 			$.isFunction(opt.offLeft) ||
 			$.isFunction(opt.affixTop) ||
 			$.isFunction(opt.offAffixTop)) {
-				this.pluginSelector = pluginSelector;
 				this.options = $.extend({}, defaultOptions, opt);
 			} else {
 				return;
@@ -77,6 +78,7 @@
 		isAffixTopCalled: "",
 		isDisable: false,
 		currentState: {},
+		
         init: function (element) {
 			var self = this;
 			self.sWindow = $(self.options.scrollElement);	
@@ -94,69 +96,90 @@
 			self.$element = $(element);
 			self.setupEvents();
         },
+		
 		setupEvents: function() {
 			var self = this,
-			triggerCheckViewpoint,
-			debounceScrollTimer = null,
-			debounceResizeTimer = null;
+				triggerCheckViewpoint,
+				onAffixTop,
+				offAffixTop,
+				onInView,
+				offView,
+				debounceScrollTimer = null,
+				debounceResizeTimer = null;
 			
 			// bind "checkViewPoint" event and check if element in viewpoint
 			// flag isCalled to called relevant callbacks
 			self.$element.on(self.options.eventCheckViewPoint, function(eData){
 				// update current state
 				self.updateCurrentState();
-					
+				// check affixTop	
 				if (self.options.affixTop && self.currentState.isAffixTop) { 
-					if(self.isAffixTopCalled !== "affixTop") {
-						self.options.affixTop(self.$element, self.currentState);
-						self.isAffixTopCalled = "affixTop";
-					}
+					onAffixTop();
 				} else if (self.options.offAffixTop) {
-					if (self.isAffixTopCalled !== "offAffixTop") {
-						self.options.offAffixTop(self.$element, self.currentState);
-						self.isAffixTopCalled = "offAffixTop";
-					}
+					offAffixTop();
 				}		
-				
+				// check in viewpoint
 				if (self.isInViewPoint()) {
-					if (self.options.inView && self.isCalled !== "inView") {
-						self.options.inView(self.$element, self.currentState);
-						self.isCalled = "inView";
-					}
+					onInView();
 				} else {
-					if (self.options.offView) {
-						if (self.isCalled !== "offView"){
-							self.options.offView(self.$element, self.currentState);
-							self.isCalled = "offView";
-						}
-					}
-					if (self.options.offTop && self.currentState.isOffTop) {
-						if (self.isCalled !== "offTop"){
-							self.options.offTop(self.$element, self.currentState);
-							self.isCalled = "offTop";
-						}
-					}
-					if (self.options.offRight && self.currentState.isOffRight) {
-						if (self.isCalled !== "offRight"){
-							self.options.offRight(self.$element, self.currentState);
-							self.isCalled = "offRight";
-						}
-					}
-					if (self.options.offBottom && self.currentState.isOffBottom) {
-						if (self.isCalled !== "offBottom"){
-							self.options.offBottom(self.$element, self.currentState);
-							self.isCalled = "offBottom";
-						}
-					}
-					if (self.options.offLeft && self.currentState.isOffLeft) {
-						if (self.isCalled !== "offLeft"){
-							self.options.offLeft(self.$element, self.currentState);
-							self.isCalled = "offLeft";
-						}
-					}
+					offView();
 				}
 			});
 			
+			onAffixTop = function() {
+				if(self.isAffixTopCalled !== "affixTop") {
+					self.options.affixTop(self.$element, self.currentState);
+					self.isAffixTopCalled = "affixTop";
+				}
+			};
+			
+			offAffixTop = function() {
+				if (self.isAffixTopCalled !== "offAffixTop") {
+					self.options.offAffixTop(self.$element, self.currentState);
+					self.isAffixTopCalled = "offAffixTop";
+				}
+			};
+			
+			onInView = function() {
+				if (self.options.inView && self.isCalled !== "inView") {
+					self.options.inView(self.$element, self.currentState);
+					self.isCalled = "inView";
+				}
+			};
+			
+			offView = function() {
+				if (self.options.offView) {
+					if (self.isCalled !== "offView"){
+						self.options.offView(self.$element, self.currentState);
+						self.isCalled = "offView";
+					}
+				}
+				if (self.options.offTop && self.currentState.isOffTop) {
+					if (self.isCalled !== "offTop"){
+						self.options.offTop(self.$element, self.currentState);
+						self.isCalled = "offTop";
+					}
+				}
+				if (self.options.offRight && self.currentState.isOffRight) {
+					if (self.isCalled !== "offRight"){
+						self.options.offRight(self.$element, self.currentState);
+						self.isCalled = "offRight";
+					}
+				}
+				if (self.options.offBottom && self.currentState.isOffBottom) {
+					if (self.isCalled !== "offBottom"){
+						self.options.offBottom(self.$element, self.currentState);
+						self.isCalled = "offBottom";
+					}
+				}
+				if (self.options.offLeft && self.currentState.isOffLeft) {
+					if (self.isCalled !== "offLeft"){
+						self.options.offLeft(self.$element, self.currentState);
+						self.isCalled = "offLeft";
+					}
+				}
+			};
+			// shortcut 
 			triggerCheckViewpoint = function(event) {
 				self.$element.trigger({
 					type: self.options.eventCheckViewPoint,
@@ -194,10 +217,11 @@
 				}, self.options.delay);
 			});
 			return this;
-		},	
+		},
+		
 		updateCurrentState: function() {
 			var self = this,
-			$elementPos = (self.$contentPane) ? self.$element.position() : self.$element.offset();
+				$elementPos = (self.$contentPane) ? self.$element.position() : self.$element.offset();
 			
 			self.currentState.winWidth = self.sWindow.width();
 			self.currentState.winHeight = self.sWindow.height();
@@ -212,15 +236,19 @@
 			self.currentState.isAffixTop = self.checkAffixTop();
 		},
         
+		// check if element in viewpoint and update currentState
 		isInViewPoint: function() {
 			var self = this;
+				
 			self.currentState.isOffTop = self.checkOffTop();
 			self.currentState.isOffRight = self.checkOffRight();
 			self.currentState.isOffBottom = self.checkOffBottom();
 			self.currentState.isOffLeft = self.checkOffLeft();
 			self.currentState.isInViewPoint = (!self.currentState.isOffTop && !self.currentState.isOffRight && !self.currentState.isOffBottom && !self.currentState.isOffLeft);
+
 			return self.currentState.isInViewPoint;
 		},
+		
 		checkOffTop: function() {
 			var self = this,
                 offsetPercentNum = isPercent(self.options.topOffset),
@@ -232,6 +260,7 @@
             }
 			return self.currentState.winScrollTop >= ((self.currentState.elementOffsetTop + self.currentState.elementHeight) - offset);
 		},
+		
 		checkOffRight: function() { 
 			var self = this,
                 offsetPercentNum = isPercent(self.options.rightOffset),
@@ -243,6 +272,7 @@
             }
 			return self.currentState.foldWidth <= (self.currentState.elementOffsetLeft - offset);
 		},
+		
 		checkOffBottom: function() {
 			var self = this,
                 offsetPercentNum = isPercent(self.options.bottomOffset),
@@ -254,6 +284,7 @@
             }
 			return self.currentState.foldHeight <= (self.currentState.elementOffsetTop - offset);
 		},
+		
 		checkOffLeft: function() {
 			var self = this,
                 offsetPercentNum = isPercent(self.options.leftOffset),
@@ -265,20 +296,24 @@
             }
 			return self.currentState.winScrollLeft >= ((self.currentState.elementOffsetLeft + self.currentState.elementWidth) - offset);
 		},
+		
 		checkAffixTop: function() {
 			var self = this,
                 offset = (typeof self.options.affixOffset === "number" ) ? self.options.affixOffset : 0;
 			return self.currentState.winScrollTop >= (self.currentState.elementOffsetTop - offset);
 		},
+		
         reset: function(opt) {
             var self = this;
             self.isCalled = (opt && opt.isCalled === false) ? "" : self.isCalled;
             self.isAffixTopCalled = (opt && opt.isAffixTopCalled === false) ? "" : self.isAffixTopCalled;
         },
+		
 		disable: function() {
 			var self = this;
 			self.isDisable = true;
 		},
+		
 		enable: function() {
 			var self = this;
 			self.isDisable = false;
@@ -287,15 +322,14 @@
 	
 	// jQuery bridge 
     $.fn.viewpoint = function (options) {
-		var pluginSelector = this.selector,
-            methodName, 
+		var methodName, 
             pluginInstance, 
             obj = {};
 		// if options is a config object, return new instance of the plugin
 		if ($.isPlainObject(options) || !options) {
 			return this.each(function() {
 				if (!$.data(this, pluginName)) { // prevent multiple instancate plugin
-					pluginInstance = new Viewpoint(this, pluginSelector, options);
+					pluginInstance = new Viewpoint(this, options);
 					$.data(this, pluginName, pluginInstance); // store reference of plugin name
 					
 					obj[pluginName] = function(elem) { 
